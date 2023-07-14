@@ -4,7 +4,7 @@ import { Providers } from "@/redux/provider";
 import Layout from "@/components/Layout";
 import SessionProvider from "@/components/SessionProvider";
 import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "@/utils/authOptions";
 import Login from "@/components/Login";
 import TProviders from "./providers";
 
