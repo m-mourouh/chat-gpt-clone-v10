@@ -17,6 +17,7 @@ type Props = {
 export default function Chat({ id }: Props) {
   const { data: session } = useSession();
   const isLoading = useAppSelector((state) => state.chat.isLoading);
+  const isClosed = useAppSelector((state) => state.sideBar.isClosed);
   const [messages, loading, error] = useCollection(
     session &&
       query(
@@ -44,7 +45,11 @@ export default function Chat({ id }: Props) {
     );
   }
   return (
-    <div className="flex flex-col relative md:md-screen ">
+    <div
+      className={`flex flex-col relative transition duration-300 ease-in-out ${
+        isClosed ? "md:md-full" : "md:md-screen"
+      }`}
+    >
       {messages?.docs.length === 0 ? (
         <Intro chatID={id} />
       ) : (
@@ -54,8 +59,7 @@ export default function Chat({ id }: Props) {
               <UserMessage text={item.data()?.question} />
               <AiMessage
                 text={item.data()?.answer}
-                links={item.data()?.links || []}
-                code={item.data()?.code || ""}
+                codes={item.data()?.codes || []}
               />
             </div>
           ))}

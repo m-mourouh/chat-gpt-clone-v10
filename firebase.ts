@@ -2,13 +2,13 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBIVLfF5NuhqNlbwu8Tob8vCFvoGvxPmDo",
-  authDomain: "chat-gpt-clone-9e86f.firebaseapp.com",
-  projectId: "chat-gpt-clone-9e86f",
-  storageBucket: "chat-gpt-clone-9e86f.appspot.com",
-  messagingSenderId: "766615223936",
-  appId: "1:766615223936:web:8675e7723e2d67e784b065",
-  measurementId: "G-5D4LLWVJ89",
+  apiKey: process.env.FB_API_KEY,
+  authDomain: "chat-gpt-v10.firebaseapp.com",
+  projectId: "chat-gpt-v10",
+  storageBucket: "chat-gpt-v10.appspot.com",
+  messagingSenderId: "895735925831",
+  appId: "1:895735925831:web:38d0b4c5b3a70f9a3f7562",
+  measurementId: "G-SXWSSTT6VP",
 };
 
 // singleton instance design pattern

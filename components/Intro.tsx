@@ -7,8 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import LoaderImg from "@/public/images/loader.svg";
 import Image from "next/image";
 import { setMessageValue } from "@/redux/features/message/message";
-import { useEffect } from "react";
-import { setIsLoading } from "@/redux/features/chat/chat";
+
 
 type Props = {
   chatID: string | null;
@@ -18,7 +17,7 @@ export default function Intro({ chatID }: Props) {
   //_________________hooks________________
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector((state) => state.chat.isLoading);
-  const hasMessages = useAppSelector((state) => state.chat.hasMessages);
+
 
   //________________functions__________________
 
@@ -47,7 +46,7 @@ export default function Intro({ chatID }: Props) {
         <div>
           <h1 className="text-4xl font-semibold text-center mb-3 mt-14 md:mb-16 dark:text-white">
             {data.APP_NAME}
-            <sub className="text-sm font-normal">images</sub>{" "}
+            <sub className="text-sm font-normal">text</sub>{" "}
           </h1>
         </div>
         <div className="flex flex-col mb-36 md:flex-row gap-2 text-center text-slate-700">
@@ -75,6 +74,9 @@ export default function Intro({ chatID }: Props) {
                     <span
                       className="text-sm w-full bg-gray-50 px-2 py-5 md:max-w-[250px] rounded-md dark:bg-chat-gray-ai dark:text-white"
                       key={id}
+                      title={
+                        id === 0 && idx === 2 ? "I am using free API 😄" : ""
+                      }
                     >
                       {item}
                     </span>

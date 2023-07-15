@@ -13,6 +13,7 @@ import { db } from "@/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { sendMessage } from "@/lib/api/api";
 import { setIsLoading, setMessages } from "@/redux/features/chat/chat";
+import { useChat } from "ai/react";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,16 +23,17 @@ type Props = {
 };
 export default function Message({ id }: Props) {
   //_____________________hooks_____________________
-
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
   const messageValue = useAppSelector((state) => state.message.value);
   const isDisabled = useAppSelector((state) => state.message.isDisabled);
+  const isClosed = useAppSelector((state) => state.sideBar.isClosed);
   const dispatch = useAppDispatch();
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
   //_____________________functions_____________________
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     let message: string;
     message = e.target.value;
     dispatch(setMessageValue(message));
@@ -48,7 +50,7 @@ export default function Message({ id }: Props) {
       theme: "dark",
     });
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleTextAreaSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!messageValue) return;
     if (messageValue.trim().length > 0) {
@@ -57,15 +59,32 @@ export default function Message({ id }: Props) {
       dispatch(setMessages(true));
       //sendMessage to api
       try {
-        const answer = await sendMessage({ question: messageValue }); //take time
+        const answer = await sendMessage({
+          messages: [{ role: "user", content: messageValue }],
+        }); //take time
         // make message field empty
         dispatch(setMessageValue(""));
+        let codes: Code[] = [];
+        if (answer) {
+          const textCode = answer?.match(/```([\s\S]+?)```/g);
+          if (textCode && textCode?.length > 0) {
+            codes = textCode
+              ?.join(" ")
+              .split("```")
+              .map((code) => code.trim())
+              .filter((code) => code != "")
+              .map((c) => ({
+                key: c.slice(0, c.indexOf("\n")),
+                code: c.slice(c.indexOf("\n")),
+              }));
+          }
+        }
+
         // Show Some loading effect
         const message = {
           question: messageValue,
-          answer: answer && answer?.data?.choices[0].content[0],
-          links: answer && answer?.data?.links,
-          code: answer && answer?.data?.code,
+          answer: answer && answer,
+          codes: codes,
           createdAt: serverTimestamp(),
           user: {
             _id: session?.user?.email!,
@@ -110,7 +129,7 @@ export default function Message({ id }: Props) {
             ),
             message
           );
-          // redirect to the current chat page
+          //  redirect to the current chat page
           dispatch(setIsLoading(false));
         }
       } catch (error) {
@@ -125,11 +144,15 @@ export default function Message({ id }: Props) {
   return (
     <>
       <ToastContainer />
-      <div className="flex justify-center bg-white dark:bg-chat-gray-user w-full md:md-screen h-28 fixed bottom-0 dark:border-t dark:border-t-slate-500 md:border-none">
-        <div className="fixed bottom-0 pt-4 md:pb-0 md:bottom-0  px-3 md:mx-5 z-[9999999]   md:rounded-md ">
+      <div
+        className={`flex justify-center bg-white dark:bg-chat-gray-user w-full h-28 fixed bottom-0 dark:border-t dark:border-t-slate-500 md:border-none transition duration-300 ease-in-out ${
+          isClosed ? "md:md-full" : "md:md-screen"
+        }`}
+      >
+        <div className="fixed bottom-0 pt-4 md:pb-0 md:bottom-0  px-3  z-[9999999]   md:rounded-md ">
           <form
             className="flex justify-between items-center "
-            onSubmit={handleSubmit}
+            onSubmit={handleTextAreaSubmit}
           >
             <textarea
               cols={80}
@@ -137,7 +160,7 @@ export default function Message({ id }: Props) {
               name="message"
               placeholder={properties.FORM.input_placeholder}
               className="pr-14 no-scrollbar min-h-[10px] w-full py-3 mb-4 md:mb-0 border rounded-md text-gray-900  placeholder:text-gray-200  sm:text-sm sm:leading-6 outline-none resize-none px-3  dark:bg-chat-gray-ai dark:border-gray-700 dark:text-white"
-              onChange={(e) => handleChange(e)}
+              onChange={(e) => handleTextAreaChange(e)}
               value={messageValue}
             />
             <button
@@ -157,12 +180,14 @@ export default function Message({ id }: Props) {
             >
               {data.developer.name}
             </Link>
+            <span>| </span>
             <Link
               href={data.developer.v1}
               className="underline"
               target="_blank"
+              title="Check next version"
             >
-              | version 1.0
+              version 1.1
             </Link>
           </small>
         </div>

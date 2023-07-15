@@ -54,3 +54,8 @@ type ChatType = {
 type Theme = {
   theme: "system" | "dark" | "light";
 }
+
+type Code = {
+  key: string;
+  code: string;
+}

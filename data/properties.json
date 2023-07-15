@@ -14,18 +14,18 @@
     {
       "title": "Capabilities",
       "items": [
-        "Provides images and code snippet with answers",
-        "Allows user to provide follow-up corrections",
-        "Trained to decline inappropriate requests"
+        "Provides Text and code snippet with answers 🧑‍💻",
+        "Allows user to provide follow-up corrections 📝",
+        "Trained to decline inappropriate requests so pay attention 😉"
       ],
       "clickable": false
     },
     {
       "title": "Limitations",
       "items": [
-        "May occasionally not work properly due to limited availability",
-        "Cannot remembers what user said earlier in the conversation",
-        "Supports only english, korean, japanese"
+        "May occasionally not work properly due to API limitations 💲",
+        "Cannot remember what user said earlier in the conversation 🧠",
+        "Limited knowledge of world and events after 2021 ⏳️"
       ],
       "clickable": false
     }

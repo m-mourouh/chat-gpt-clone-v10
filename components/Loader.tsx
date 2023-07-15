@@ -22,7 +22,7 @@ export default function Loader() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen fixed inset-0 bg-white flex justify-center items-center z-[9999999999] gap-4 dark:bg-chat-gray-user">
+      <div className="w-full h-screen fixed inset-0  flex justify-center items-center z-[9999999999] gap-4 bg-chat-gray-user">
         <Image
           src={LoaderImg}
           height={25}
@@ -30,7 +30,7 @@ export default function Loader() {
           className="animate-spin"
           alt="laoding"
         />{" "}
-        <span className="dark:text-white"> Loading...</span>
+        <span className="text-white"> Loading...</span>
       </div>
     );
   }

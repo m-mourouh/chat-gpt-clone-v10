@@ -33,7 +33,7 @@ export default function SideBar() {
 //  ____________________JSX_______________________
   return (
     <div
-      className={`min-w-full  ${
+      className={`${
         isClosed ? "md:min-w-[0]" : "md:min-w-[260px]"
       }`}
     >
