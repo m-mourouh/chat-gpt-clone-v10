@@ -60,3 +60,9 @@ type Code = {
   key: string;
   code: string;
 }
+
+type ModalType = {
+  title: string;
+  message: string;
+  visible?: boolean;
+};
