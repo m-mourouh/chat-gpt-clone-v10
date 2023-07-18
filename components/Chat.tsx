@@ -38,7 +38,10 @@ export default function Chat({ id }: Props) {
             className="animate-spin"
             alt="laoding"
           />{" "}
-          <span className="dark:text-white"> Loading...</span>
+          <span className="dark:text-white">
+            {" "}
+            Loading <span className="relative animate-ping">...</span>
+          </span>
         </div>
         <Message id={id} />
       </div>

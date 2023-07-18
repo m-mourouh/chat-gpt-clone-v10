@@ -26,6 +26,7 @@ type InputProps = {
 type MessageType = {
   value: string;
   isDisabled?: boolean;
+  limited?: boolean;
 };
 type ChatItemProps = {
   id: string

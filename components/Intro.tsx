@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import LoaderImg from "@/public/images/loader.svg";
 import Image from "next/image";
 import { setMessageValue } from "@/redux/features/message/message";
-
+import { useEffect, useState } from "react";
 
 type Props = {
   chatID: string | null;
@@ -17,12 +17,19 @@ export default function Intro({ chatID }: Props) {
   //_________________hooks________________
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector((state) => state.chat.isLoading);
+  const limited = useAppSelector((state) => state.message.limited);
+  const [isLimited, setIsLimited] = useState(false);
 
-
+  useEffect(() => {
+    const isLocalLimited = localStorage.getItem("limited");
+    if (isLocalLimited === "true") {
+      setIsLimited(true);
+    }
+  }, []);
   //________________functions__________________
 
   const sendSlectedMessage = (message: string) => {
-    if (message.trim().length > 0) {
+    if (message.trim().length > 0 && !limited && !isLimited) {
       dispatch(setMessageValue(message.trim()));
     }
   };
@@ -37,7 +44,10 @@ export default function Intro({ chatID }: Props) {
           className="animate-spin"
           alt="laoding"
         />{" "}
-        <span className="dark:text-white"> Loading...</span>
+        <span className="dark:text-white">
+          {" "}
+          Loading <span className="relative animate-ping">...</span>
+        </span>
       </div>
     );
   } else {
@@ -46,7 +56,7 @@ export default function Intro({ chatID }: Props) {
         <div>
           <h1 className="text-4xl font-semibold text-center mb-3 mt-14 md:mb-16 dark:text-white">
             {data.APP_NAME}
-            <sub className="text-sm font-normal">text</sub>{" "}
+            <sub className="text-sm font-normal animate-pulse">text</sub>{" "}
           </h1>
         </div>
         <div className="flex flex-col mb-36 md:flex-row gap-2 text-center text-slate-700">

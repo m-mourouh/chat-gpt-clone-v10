@@ -1,15 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import sideBarReducer from "./features/sidebar/sidebar";
-import messageReducer from "./features/message/message"
-import chatReducer from "./features/chat/chat"
-import themeReducer from "./features/theme/theme"
+import messageReducer from "./features/message/message";
+import chatReducer from "./features/chat/chat";
+import modalReducer from "./features/dialog/dialog";
 
 const store = configureStore({
   reducer: {
     sideBar: sideBarReducer,
     message: messageReducer,
     chat: chatReducer,
-    theme: themeReducer
+    modal: modalReducer,
   },
 });
 

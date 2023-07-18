@@ -4,17 +4,29 @@ import { AiOutlineHeart } from "react-icons/ai";
 import data from "@/data/data.json";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { setMessageValue } from "@/redux/features/message/message";
+import {
+  setDisabled,
+  setLimited,
+  setMessageValue,
+} from "@/redux/features/message/message";
 import { FormEvent, useEffect, useState } from "react";
 import properties from "@/data/properties.json";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  increment,
+  updateDoc,
+  doc,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import { db } from "@/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { sendMessage } from "@/lib/api/api";
 import { setIsLoading, setMessages } from "@/redux/features/chat/chat";
-import { useChat } from "ai/react";
-
+import { showModal } from "@/redux/features/dialog/dialog";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -23,14 +35,23 @@ type Props = {
 };
 export default function Message({ id }: Props) {
   //_____________________hooks_____________________
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
   const messageValue = useAppSelector((state) => state.message.value);
   const isDisabled = useAppSelector((state) => state.message.isDisabled);
   const isClosed = useAppSelector((state) => state.sideBar.isClosed);
+  const limited = useAppSelector((state) => state.message.limited);
+  const [isLimited, setIsLimited] = useState(false);
   const dispatch = useAppDispatch();
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const isLocalLimited = localStorage.getItem("limited");
+    if (isLocalLimited === "true") {
+      setIsLimited(true);
+    }
+    console.log("test")
+  }, []);
 
   //_____________________functions_____________________
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -52,8 +73,43 @@ export default function Message({ id }: Props) {
 
   const handleTextAreaSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLimited || limited) {
+      dispatch(
+        showModal({
+          title: "Message",
+          message: "You reached the limit. You can only ask 5 questions 😉",
+        })
+      );
+      return;
+    }
     if (!messageValue) return;
     if (messageValue.trim().length > 0) {
+      // check if user reached the limit
+      const userDocRef = doc(db, "users", session?.user?.email!);
+      try {
+        const userDocSnapshot = await getDoc(userDocRef);
+        if (userDocSnapshot.exists()) {
+          if (
+            userDocSnapshot.data()?.value >= +process.env.NEXT_PUBLIC_MAX_LIMIT!
+          ) {
+            dispatch(setDisabled()); // disable the sed button
+            dispatch(setLimited());
+            dispatch(setMessageValue(""));
+            dispatch(
+              showModal({
+                title: "Message",
+                message: `You reached the limit. You can only ask ${process.env
+                  .NEXT_PUBLIC_MAX_LIMIT!} questions 😉`,
+              })
+            );
+            dispatch(setIsLoading(false));
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Error retrieving user document:", err);
+      }
+      // _________________________________________
       //messgae
       dispatch(setIsLoading(true));
       dispatch(setMessages(true));
@@ -94,21 +150,38 @@ export default function Message({ id }: Props) {
         };
         // create new Chat (Home Page)
         if (pathname === "/" && !id) {
-          const doc = await addDoc(
+          const userDocRef = doc(db, "users", session?.user?.email!);
+          try {
+            const userDocSnapshot = await getDoc(userDocRef);
+            if (userDocSnapshot.exists()) {
+              await updateDoc(doc(db, "users", session?.user?.email!), {
+                value: increment(1),
+              });
+            } else {
+              await setDoc(doc(db, "users", session?.user?.email!), {
+                value: 1,
+              });
+            }
+          } catch (err) {
+            console.error("Error retrieving user document:", err);
+          }
+
+          const docc = await addDoc(
             collection(db, "users", session?.user?.email!, "chats"),
             {
               userId: session?.user?.email,
               createdAt: serverTimestamp(),
             }
           );
-          router.push(`/chat/${doc.id}`);
+
+          router.push(`/chat/${docc.id}`);
           await addDoc(
             collection(
               db,
               "users",
               session?.user?.email!,
               "chats",
-              doc.id,
+              docc.id,
               "messages"
             ),
             message
@@ -129,11 +202,17 @@ export default function Message({ id }: Props) {
             ),
             message
           );
+          // updating
+          await updateDoc(doc(db, "users", session?.user?.email!), {
+            value: increment(1),
+          });
           //  redirect to the current chat page
           dispatch(setIsLoading(false));
         }
       } catch (error) {
         console.log(error);
+        router.push(`/`);
+        setIsLoading(false);
         notify("⁉️ Somthing went wrong!", 2000);
         notify("😉 we will fix this later", 4000);
       }
@@ -145,7 +224,7 @@ export default function Message({ id }: Props) {
     <>
       <ToastContainer />
       <div
-        className={`flex justify-center bg-white dark:bg-chat-gray-user w-full h-28 fixed bottom-0 dark:border-t dark:border-t-slate-500 md:border-none transition duration-300 ease-in-out ${
+        className={`flex justify-center bg-white dark:bg-chat-gray-user w-full h-28 fixed bottom-0 dark:border-t dark:border-t-white/20 md:border-none transition duration-300 ease-in-out ${
           isClosed ? "md:md-full" : "md:md-screen"
         }`}
       >
@@ -158,13 +237,24 @@ export default function Message({ id }: Props) {
               cols={80}
               rows={1}
               name="message"
-              placeholder={properties.FORM.input_placeholder}
-              className="pr-14 no-scrollbar min-h-[10px] w-full py-3 mb-4 md:mb-0 border rounded-md text-gray-900  placeholder:text-gray-200  sm:text-sm sm:leading-6 outline-none resize-none px-3  dark:bg-chat-gray-ai dark:border-gray-700 dark:text-white"
+              disabled={limited || isLimited ? true : false}
+              placeholder={
+                limited || isLimited
+                  ? `You can ask only ${process.env
+                      .NEXT_PUBLIC_MAX_LIMIT!} questions`
+                  : properties.FORM.input_placeholder
+              }
+              className="pr-14 no-scrollbar min-h-[10px] w-full py-3 mb-4 md:mb-0 border rounded-md text-gray-900  sm:text-sm sm:leading-6 outline-none resize-none px-3  dark:bg-chat-gray-ai dark:border-gray-700 dark:text-white placeholder:text-slate-700  disabled:placeholder:text-red-400 disabled:dark:placeholder:text-red-200"
               onChange={(e) => handleTextAreaChange(e)}
               value={messageValue}
             />
             <button
-              disabled={isDisabled}
+              disabled={isDisabled || limited || isLimited}
+              title={
+                limited || isLimited
+                  ? `You can ask only ${process.env.NEXT_PUBLIC_MAX_LIMIT}`
+                  : ""
+              }
               className="text-xl absolute right-5 mb-4 md:mb-0 bg-green-500 text-white p-2 disabled:bg-transparent disabled:shadow-none disabled:text-slate-300 rounded-md text-center shadow-sm"
             >
               <IoMdSend />

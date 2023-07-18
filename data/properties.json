@@ -24,7 +24,7 @@
       "title": "Limitations",
       "items": [
         "May occasionally not work properly due to API limitations 💲",
-        "Cannot remember what user said earlier in the conversation 🧠",
+        "For testing purposes, you can only ask 5 questions 🖐️",
         "Limited knowledge of world and events after 2021 ⏳️"
       ],
       "clickable": false
