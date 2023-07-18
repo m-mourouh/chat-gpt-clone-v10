@@ -244,7 +244,7 @@ export default function Message({ id }: Props) {
                       .NEXT_PUBLIC_MAX_LIMIT!} questions`
                   : properties.FORM.input_placeholder
               }
-              className="pr-14 no-scrollbar min-h-[10px] w-full py-3 mb-4 md:mb-0 border rounded-md text-gray-900  sm:text-sm sm:leading-6 outline-none resize-none px-3  dark:bg-chat-gray-ai dark:border-gray-700 dark:text-white placeholder:text-slate-700  disabled:placeholder:text-red-400 disabled:dark:placeholder:text-red-200"
+              className="pr-14 no-scrollbar min-h-[10px] w-full py-3 mb-4 md:mb-0 border rounded-md text-gray-900  sm:text-sm sm:leading-6 outline-none resize-none px-3  dark:bg-chat-gray-ai dark:border-gray-700 dark:text-white placeholder:text-slate-700  disabled:placeholder:text-red-400 disabled: disabled:dark:placeholder:text-red-200 dark:placeholder:text-slate-200 "
               onChange={(e) => handleTextAreaChange(e)}
               value={messageValue}
             />
